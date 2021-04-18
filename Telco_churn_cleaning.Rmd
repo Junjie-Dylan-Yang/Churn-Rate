@@ -1,0 +1,75 @@
+---
+title: "Telco_churn_Cleaning"
+author: "Shengtao Lin"
+date: "4/18/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Libraries
+library(tidyverse)
+library(ggplot2)
+library(caret)
+```
+
+```{r}
+#read csv
+df = read.csv("Telco_churn.csv",sep=',')
+head(df)
+```
+```{r}
+#check NA
+sapply(df, function(x) sum(is.na(x)))
+```
+```{r}
+#drop na
+df<-df%>%drop_na()
+sapply(df, function(x) sum(is.na(x)))
+```
+```{r}
+#column type char to factor
+
+ind_numeric <- sapply(df, function(x)c(length(unique(x)) <5))
+df[ind_numeric] <- lapply(df[ind_numeric], factor)
+head(df)
+
+```
+
+
+```{r}
+summary(df[2:21])
+```
+```{r}
+#one-hot dummy / scaled data if needed
+
+dummy <- dummyVars(" ~ .", data=df[2:20])
+df1 <- data.frame(predict(dummy, newdata = df))
+df1["Churn"]<-df["Churn"]
+
+#function to transfer yes/no to 1/0
+yes_no <-function(x){
+  if(x == "yes"){
+    return(1)
+  }
+  else{
+    return(0)
+  }
+}
+
+df1["Churn"]<-apply(df1["Churn"],MARGIN=1, FUN=function(x) yes_no(x))
+
+#scale the numerical data and factor
+ind_numeric <- sapply(df1, function(x)c(length(unique(x)) != 2))
+df1[ind_numeric] <- lapply(df1[ind_numeric], scale)
+
+ind_numeric <- sapply(df1, function(x)c(length(unique(x)) ==2))
+df1[ind_numeric] <- lapply(df1[ind_numeric], factor)
+
+head(df1)
+```
+
+
