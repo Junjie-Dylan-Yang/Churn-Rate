@@ -1,1 +1,1 @@
-# Churn-Rate
+# Churn Rate Classification Project
