@@ -7,7 +7,9 @@ library(dplyr)
 
 
 #-------------------------------------------------------------------------------
+
 df = read.csv("telecom_users.csv")
+
 
 
 #----------------------Handling NA, Feature Engineering-------------------------
@@ -55,15 +57,24 @@ df[sapply(df, is.character)] = lapply(df[sapply(df, is.character)], as.factor)
 df$SeniorCitizen = as.factor(plyr::mapvalues(df$SeniorCitizen, from=c("0","1"), to=c("No", "Yes")))
 
 
-#Scale numeric variables
-df$tenure = as.numeric(df$tenure)
-ind_numeric = sapply(df, is.numeric)
-df[ind_numeric] = lapply(df[ind_numeric], scale)
-
-head(df)
-
-
 #----------------------EDA, Initial Finding-------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Multicollinearity 
 source("http://www.sthda.com/upload/rquery_cormat.r")
@@ -71,7 +82,16 @@ mydata <- df[, c(5,18,19)]
 require("corrplot")
 rquery.cormat(mydata)
 
+#Drop TotalCharge, which is MonthlyCharge*tenure
+df = df[,-19]
 
+#Scale numeric variables
+df$tenure = as.numeric(df$tenure)
+ind_numeric = sapply(df, is.numeric)
+df[ind_numeric] = lapply(df[ind_numeric], scale)
+
+head(df)
+str(df)
 
 #----------------------Need of oversampling for unbalanced?---------------------
 
@@ -80,6 +100,8 @@ count(df$Churn)
 
 #serve as baseline, use F1 score or Confusion Matrix
 #Oversampling is saved for later if we have time
+
+
 
 #----------------------Data Preparation (Train, Validation, Test)---------------
 
@@ -93,7 +115,7 @@ test =  df[-split,]
 
 
 
-
+#----------------------Modeling (Logistic Regression)---------------------------
 
 
 
