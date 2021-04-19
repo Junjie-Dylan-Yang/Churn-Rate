@@ -57,26 +57,39 @@ df$SeniorCitizen = as.factor(plyr::mapvalues(df$SeniorCitizen, from=c("0","1"), 
 
 #Scale numeric variables
 df$tenure = as.numeric(df$tenure)
-ind_numeric <- sapply(df, is.numeric)
-df[ind_numeric] <- lapply(df[ind_numeric], scale)
+ind_numeric = sapply(df, is.numeric)
+df[ind_numeric] = lapply(df[ind_numeric], scale)
 
 head(df)
 
 
 #----------------------EDA, Initial Finding-------------------------------------
 
+#Multicollinearity 
+source("http://www.sthda.com/upload/rquery_cormat.r")
+mydata <- df[, c(5,18,19)]
+require("corrplot")
+rquery.cormat(mydata)
 
 
 
 #----------------------Need of oversampling for unbalanced?---------------------
 
+ggplot(df, aes(Churn, fill = Churn))+geom_bar()
+count(df$Churn)
+
 #serve as baseline, use F1 score or Confusion Matrix
 #Oversampling is saved for later if we have time
 
-
 #----------------------Data Preparation (Train, Validation, Test)---------------
 
+set.seed(123)
+split = createDataPartition(df$Churn,p = 0.7,list = FALSE)
+train = df[split,]
 
+#test set, which is considered as unseen data, 
+#is saved for the best model after models' performance comparison
+test =  df[-split,]
 
 
 
