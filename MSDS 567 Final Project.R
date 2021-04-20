@@ -152,8 +152,19 @@ test =  df[-split,]
 
 #----------------------Modeling (Logistic Regression)---------------------------
 
-
-
+# define training control 10 fold cross validation
+train_control <- trainControl(method = "cv", number = 10)
+# train the model on training set using logistic Regression
+model_logit <- train(Churn ~ .,data = train,
+               trControl = train_control,
+               method = "glm",
+               family=binomial())
+summary(model_logit)
+#Use the logit model to make prediction 
+predict_logit <- predict(model_logit, newdata = test)
+#Generate Confusion Matrix and F1 Score.
+result_logit <- confusionMatrix(data = predict_logit, reference = test$Churn, mode = "prec_recall")
+F1_logit <- result_logit$byClass[7]
 
 #----------------------Modeling (LDA)-------------------------------------------
 
