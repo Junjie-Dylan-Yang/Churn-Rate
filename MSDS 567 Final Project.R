@@ -59,20 +59,30 @@ df$SeniorCitizen = as.factor(plyr::mapvalues(df$SeniorCitizen, from=c("0","1"), 
 
 #----------------------EDA, Initial Finding-------------------------------------
 
+#Continuous Variables
+hist(df$tenure)
+hist(df$MonthlyCharges)
 
+#Categorical Variables over Churn
 
+ggplot(df, aes(x = gender, fill = Churn))+geom_bar()
 
+#From percentage view, senior citizen are more liky to churn than non-senior citizen
+ggplot(df, aes(x = SeniorCitizen, fill = Churn))+geom_bar()
 
+ggplot(df, aes(x = StreamingTV , fill = Churn))+geom_bar()
+ggplot(df, aes(x = TechSupport , fill = Churn))+geom_bar()
 
+#Most customers prefer e-check, and indeed e-check has highest churn rate. 
+ggplot(df, aes(x = PaymentMethod , fill = Churn))+geom_bar()+ scale_x_discrete(guide = guide_axis(n.dodge = 3))
 
+ggplot(df, aes(x = StreamingTV, fill = Churn))+geom_bar()
 
+#Month to month wins
+ggplot(df, aes(x = Contract, fill = Churn))+geom_bar() + scale_x_discrete(guide = guide_axis(n.dodge = 3))
 
-
-
-
-
-
-
+#Monthly cost over Churn
+ggplot(df, aes(x = MonthlyCharges, fill = Churn))+geom_histogram(binwidth = 10)
 
 
 
@@ -120,7 +130,17 @@ test =  df[-split,]
 
 
 
+#----------------------Modeling (LDA)-------------------------------------------
 
+
+
+
+#----------------------Modeling (SVM)-------------------------------------------
+
+
+
+
+#----------------------Modeling (Random Forest)---------------------------------
 
 
 
