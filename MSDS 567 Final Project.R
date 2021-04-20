@@ -67,8 +67,31 @@ hist(df$MonthlyCharges)
 
 ggplot(df, aes(x = gender, fill = Churn))+geom_bar()
 
-#From percentage view, senior citizen are more liky to churn than non-senior citizen
+#From percentage view, senior citizen are more likely to churn than non-senior citizen
 ggplot(df, aes(x = SeniorCitizen, fill = Churn))+geom_bar()
+
+#Avg Monthly cost over senior citizen or not
+df%>%
+  group_by(SeniorCitizen)%>%
+  summarise(mean = mean(MonthlyCharges), n = n())
+
+#Partner
+ggplot(df, aes(x = Partner, fill = Churn))+geom_bar()
+
+#Avg Monthly cost over Partner or not
+df%>%
+  group_by(Partner)%>%
+  summarise(mean = mean(MonthlyCharges), n = n())
+
+#Dependents
+ggplot(df, aes(x = Dependents, fill = Churn))+geom_bar()
+
+#Avg Monthly cost over Dependents or not
+df%>%
+  group_by(Dependents)%>%
+  summarise(mean = mean(MonthlyCharges), n = n())
+
+
 
 ggplot(df, aes(x = StreamingTV , fill = Churn))+geom_bar()
 ggplot(df, aes(x = TechSupport , fill = Churn))+geom_bar()
@@ -83,6 +106,8 @@ ggplot(df, aes(x = Contract, fill = Churn))+geom_bar() + scale_x_discrete(guide 
 
 #Monthly cost over Churn
 ggplot(df, aes(x = MonthlyCharges, fill = Churn))+geom_histogram(binwidth = 10)
+
+
 
 
 
