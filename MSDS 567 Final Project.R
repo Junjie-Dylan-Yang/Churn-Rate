@@ -189,7 +189,8 @@ predict_logit <- predict(model_logit, newdata = test)
 #Generate Confusion Matrix and F1 Score.
 result_logit <- confusionMatrix(data = predict_logit, reference = test$Churn, mode = "prec_recall")
 F1_logit <- result_logit$byClass[7]
-
+result_logit
+F1_logit
 #----------------------Modeling (LDA)-------------------------------------------
 
 
