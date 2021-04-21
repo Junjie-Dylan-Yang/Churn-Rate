@@ -129,7 +129,6 @@ ggplot(df, aes(Churn, fill = Churn))+geom_bar()
 
 #library(unbalanced)
 #levels(df$Churn) <- c(0,1)
-
 #ind_var <- df[,1:19]
 #cl <- df$Churn
 #osdat <- ubOver(X=ind_var, Y=cl) #best result
@@ -179,7 +178,7 @@ test =  df[-split,]
 # define training control 10 fold cross validation
 train_control <- trainControl(method = "cv", number = 10)
 # train the model on training set using logistic Regression
-model_logit <- train(Churn ~ .,data = train,
+model_logit <- caret::train(Churn ~ .,data = train,
                trControl = train_control,
                method = "glm",
                family=binomial())
@@ -191,6 +190,10 @@ result_logit <- confusionMatrix(data = predict_logit, reference = test$Churn, mo
 F1_logit <- result_logit$byClass[7]
 result_logit
 F1_logit
+
+
+
+
 #----------------------Modeling (LDA)-------------------------------------------
 
 
