@@ -183,6 +183,9 @@ model_logit <- caret::train(Churn ~ .,data = new_train,
                method = "glm",
                family=binomial())
 summary(model_logit)
+
+print(model_logit)
+
 #Use the logit model to make prediction 
 predict_logit <- predict(model_logit, newdata = test)
 #Generate Confusion Matrix and F1 Score.
@@ -190,7 +193,6 @@ result_logit <- confusionMatrix(data = predict_logit, reference = test$Churn, mo
 F1_logit <- result_logit$byClass[7]
 result_logit
 F1_logit
-
 
 
 
