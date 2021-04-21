@@ -162,14 +162,13 @@ ggplot(train, aes(Churn, fill = Churn))+geom_bar()
 library(unbalanced)
 levels(train$Churn) <- c(0,1)
 levels(test$Churn) <- c(0,1)
-ind_var <- train[,1:19]
-cl <- train$Churn
-osdat <- ubOver(X=ind_var, Y=cl) #best result
-os_cust <- cbind(osdat$X, osdat$Y)
-colnames(os_cust)[20] <- "Churn"
-barplot(table(os_cust[,20]), main = "Balanced Data through Oversampling", ylab = "Count", xlab = colnames(os_cust)[20])
+input <- train[,1:18]
+response <- train$Churn
+balance <- ubOver(X=input, Y=response) 
+new_train <- cbind(balance$X, balance$Y)
+colnames(new_train)[19] <- "Churn"
 
-train = os_cust
+ggplot(new_train, aes(Churn, fill = Churn))+geom_bar()
 
 
 
@@ -179,7 +178,7 @@ train = os_cust
 # define training control 10 fold cross validation
 train_control <- trainControl(method = "cv", number = 10)
 # train the model on training set using logistic Regression
-model_logit <- caret::train(Churn ~ .,data = train,
+model_logit <- caret::train(Churn ~ .,data = new_train,
                trControl = train_control,
                method = "glm",
                family=binomial())
