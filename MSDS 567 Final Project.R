@@ -111,6 +111,39 @@ ggplot(df, aes(x = MonthlyCharges, fill = Churn))+geom_histogram(binwidth = 10)
 
 
 
+
+#Need of oversampling for unbalanced?
+
+ggplot(df, aes(Churn, fill = Churn))+geom_bar()
+
+
+#library(ROSE)
+#df <- ovun.sample(Churn~., data=df,
+#N=nrow(df), p=0.5, 
+#seed=123, method="both")$data
+
+#serve as baseline, use F1 score or Confusion Matrix
+#Oversampling is saved for later if we have time
+
+#-------------------Use below---------------------
+
+#library(unbalanced)
+#levels(df$Churn) <- c(0,1)
+
+#ind_var <- df[,1:19]
+#cl <- df$Churn
+#osdat <- ubOver(X=ind_var, Y=cl) #best result
+#os_cust <- cbind(osdat$X, osdat$Y)
+#colnames(os_cust)[20] <- "Churn"
+#barplot(table(os_cust[,20]), main = "Balanced Data through Oversampling", ylab = "Count", xlab = colnames(os_cust)[20])
+
+#df = os_cust
+
+
+
+
+
+
 #Multicollinearity 
 source("http://www.sthda.com/upload/rquery_cormat.r")
 mydata <- df[, c(5,18,19)]
@@ -127,15 +160,6 @@ df[ind_numeric] = lapply(df[ind_numeric], scale)
 
 head(df)
 str(df)
-
-#----------------------Need of oversampling for unbalanced?---------------------
-
-ggplot(df, aes(Churn, fill = Churn))+geom_bar()
-count(df$Churn)
-
-#serve as baseline, use F1 score or Confusion Matrix
-#Oversampling is saved for later if we have time
-
 
 
 #----------------------Data Preparation (Train, Validation, Test)---------------
