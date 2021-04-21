@@ -4,6 +4,9 @@ library(imputeTS)
 library(here)
 library(caret)
 library(dplyr)
+# for parallel computing
+library(parallel)
+library(doParallel)
 
 
 #-------------------------------------------------------------------------------
@@ -217,10 +220,17 @@ F1_lda
 
 #----------------------Modeling (SVM)-------------------------------------------
 set.seed(123)
+
+cluster <- makeCluster(detectCores() - 2)
+registerDoParallel(cluster)
+train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
+
 model_svm <- caret::train(Churn ~ .,data = new_train, method = "svmLinear",
-                 trControl=train_control,
+                 trControl=train_control_parallel,
                  tuneGrid = expand.grid(C = c(0.01,0.1, 1,5,10,100)),
                  verbose = TRUE)
+
+stopCluster(cluster)
 #Pick C = 0.1
 
 predict_svm <- predict(model_svm, newdata = test)
@@ -234,14 +244,25 @@ F1_svm
 
 
 #----------------------Modeling (Random Forest)---------------------------------
+set.seed(123)
+
+cluster <- makeCluster(detectCores() - 2)
+registerDoParallel(cluster)
 
 model_rf <- caret::train(Churn ~ .,data = new_train, method = "rf",
-                trControl=train_control,
+                trControl=train_control_parallel,
                 tuneGrid = expand.grid(.mtry = c(1:18)),
+                metric="Kappa",
                 verbose = TRUE)
 
+stopCluster(cluster)
+model_rf
 
-
+predict_rf <- predict(model_rf, newdata = test)
+result_rf <- confusionMatrix(data = predict_rf, reference = test$Churn, mode = "prec_recall")
+F1_rf <- result_rf$byClass[7]
+result_rf
+F1_rf
 
 
 
