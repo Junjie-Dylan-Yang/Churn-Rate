@@ -252,7 +252,7 @@ train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel
 
 model_svm_poly <- caret::train(Churn ~ .,data = new_train, method = "svmPoly",
                           trControl=train_control_parallel,
-                          #tuneGrid = expand.grid(C = c(0.01,0.1, 1,5,10,100), degree = c(1,2,3)),
+                          #tuneGrid = expand.grid(C = c(0.01,0.1, 1,5,10,100), degree = c(1,2,3), scale=0.1),
                           tuneLength = 5,
                           verbose = TRUE)
 
@@ -263,9 +263,9 @@ model_svm_poly$bestTune
 predict_svm_poly <- predict(model_svm_poly, newdata = test)
 
 result_svm_poly <- confusionMatrix(data = predict_svm_poly, reference = test$Churn, mode = "prec_recall")
-F1_svm_poly <- result_svm$byClass[7]
-result_svm
-F1_svm
+F1_svm_poly <- result_svm_poly$byClass[7]
+result_svm_poly
+F1_svm_poly
 
 
 #----------------------Modeling (Random Forest)---------------------------------
