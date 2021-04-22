@@ -242,30 +242,31 @@ result_svm
 F1_svm
 
 
-#----------------------Modeling (SVM Poly)------------------------------------
+#----------------------Modeling (SVM Radial)------------------------------------
 set.seed(123)
 
 cluster <- makeCluster(detectCores() - 2)
 registerDoParallel(cluster)
 
-train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
+train_control_parallel <- trainControl(method = "cv", number = 5, allowParallel = TRUE)
 
-model_svm_poly <- caret::train(Churn ~ .,data = new_train, method = "svmPoly",
+model_svm_Rad <- caret::train(Churn ~ .,data = new_train, method = "svmRadial",
                           trControl=train_control_parallel,
-                          #tuneGrid = expand.grid(C = c(0.01,0.1, 1,5,10,100), degree = c(1,2,3), scale=0.1),
                           tuneLength = 5,
                           verbose = TRUE)
 
 stopCluster(cluster)
 
-model_svm_poly$bestTune
+model_svm_Rad$bestTune
 
-predict_svm_poly <- predict(model_svm_poly, newdata = test)
+predict_svm_Rad <- predict(model_svm_Rad, newdata = test)
 
-result_svm_poly <- confusionMatrix(data = predict_svm_poly, reference = test$Churn, mode = "prec_recall")
-F1_svm_poly <- result_svm_poly$byClass[7]
-result_svm_poly
-F1_svm_poly
+result_svm_Rad <- confusionMatrix(data = predict_svm_Rad, reference = test$Churn, mode = "prec_recall")
+F1_svm_Rad <- result_svm_Rad$byClass[7]
+result_svm_Rad
+F1_svm_Rad
+
+
 
 
 #----------------------Modeling (Random Forest)---------------------------------
@@ -301,10 +302,20 @@ library(randomForest)
 model_rf1 <- randomForest(Churn ~ .,data = new_train,mtry =11, importance = TRUE)
 print(model_rf1)
 
+pred_rf1 <- predict(model_rf1, test)
+
+result_rf1 = caret::confusionMatrix(pred_rf1, test$Churn, mode = "prec_recall")
+
+result_rf1$byClass[7]
+
+
 #Find optimal tree size, 100 seems sufficient
 plot(model_rf1,main="Error as ntree increases")
 
-model_rf2 <- randomForest(Churn ~ .,data = new_train,mtry =11, ntre = 100, importance = TRUE)
+set.seed(123)
+
+#Final Model for RF
+model_rf2 <- randomForest(Churn ~ .,data = new_train,mtry =11, ntree = 100, importance = TRUE)
 print(model_rf2)
 
 
