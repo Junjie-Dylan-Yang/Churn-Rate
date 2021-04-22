@@ -179,7 +179,7 @@ ggplot(new_train, aes(Churn, fill = Churn))+geom_bar()
 #----------------------Modeling (Logistic Regression)---------------------------
 
 # define training control 10 fold cross validation
-train_control <- trainControl(method = "cv", number = 10)
+train_control <- trainControl(method = "cv", number = 10, allowParallel = FALSE)
 # train the model on training set using logistic Regression
 model_logit <- caret::train(Churn ~ .,data = new_train,
                trControl = train_control,
@@ -248,6 +248,7 @@ set.seed(123)
 
 cluster <- makeCluster(detectCores() - 2)
 registerDoParallel(cluster)
+train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
 
 model_rf <- caret::train(Churn ~ .,data = new_train, method = "rf",
                 trControl=train_control_parallel,
@@ -265,6 +266,17 @@ result_rf
 F1_rf
 
 
+#------rf_delete-----
+library(randomForest)
+
+for (variable in c(1:18)) {
+  fit<-randomForest(Churn ~ .,data = new_train,inportance=TRUE,mtry=variable)
+  
+  result<-confusionMatrix(data = predict(fit,newdata = test), reference = test$Churn, mode = "prec_recall")
+  
+  print(variable)
+  print(result$table)
+}
 
 
 
