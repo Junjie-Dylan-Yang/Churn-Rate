@@ -291,21 +291,35 @@ result_rf
 F1_rf
 
 
+#---------Use randomForest to tune tree and # of variable split
+
+set.seed(123)
 #Variable Importance Plot
 library(randomForest)
-varImpPlot(model_rf, sort=T, n.var = 6)
 
-#------rf_delete-----
+#Choose mtry = 11 based on above
+model_rf1 <- randomForest(Churn ~ .,data = new_train,mtry =11, importance = TRUE)
+print(model_rf1)
+
+#Find optimal tree size, 100 seems sufficient
+plot(model_rf1,main="Error as ntree increases")
+
+model_rf2 <- randomForest(Churn ~ .,data = new_train,mtry =11, ntre = 100, importance = TRUE)
+print(model_rf2)
 
 
-for (variable in c(1:18)) {
-  fit<-randomForest(Churn ~ .,data = new_train,inportance=TRUE,mtry=variable)
-  
-  result<-confusionMatrix(data = predict(fit,newdata = test), reference = test$Churn, mode = "prec_recall")
-  
-  print(variable)
-  print(result$table)
-}
+pred_rf2 <- predict(model_rf2, test)
+
+result_rf2 = caret::confusionMatrix(pred_rf2, test$Churn, mode = "prec_recall")
+
+result_rf2$byClass[7]
+
+
+varImpPlot(model_rf2, main="Variable Importance Plots")
+
+
+
+
 
 
 
