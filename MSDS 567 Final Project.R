@@ -218,11 +218,12 @@ result_lda
 F1_lda
 
 
-#----------------------Modeling (SVM)-------------------------------------------
+#----------------------Modeling (SVM Linear)------------------------------------
 set.seed(123)
 
 cluster <- makeCluster(detectCores() - 2)
 registerDoParallel(cluster)
+
 train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
 
 model_svm <- caret::train(Churn ~ .,data = new_train, method = "svmLinear",
@@ -241,6 +242,30 @@ result_svm
 F1_svm
 
 
+#----------------------Modeling (SVM Poly)------------------------------------
+set.seed(123)
+
+cluster <- makeCluster(detectCores() - 2)
+registerDoParallel(cluster)
+
+train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
+
+model_svm_poly <- caret::train(Churn ~ .,data = new_train, method = "svmPoly",
+                          trControl=train_control_parallel,
+                          #tuneGrid = expand.grid(C = c(0.01,0.1, 1,5,10,100), degree = c(1,2,3)),
+                          tuneLength = 5,
+                          verbose = TRUE)
+
+stopCluster(cluster)
+
+model_svm_poly$bestTune
+
+predict_svm_poly <- predict(model_svm_poly, newdata = test)
+
+result_svm_poly <- confusionMatrix(data = predict_svm_poly, reference = test$Churn, mode = "prec_recall")
+F1_svm_poly <- result_svm$byClass[7]
+result_svm
+F1_svm
 
 
 #----------------------Modeling (Random Forest)---------------------------------
@@ -266,8 +291,12 @@ result_rf
 F1_rf
 
 
-#------rf_delete-----
+#Variable Importance Plot
 library(randomForest)
+varImpPlot(model_rf, sort=T, n.var = 6)
+
+#------rf_delete-----
+
 
 for (variable in c(1:18)) {
   fit<-randomForest(Churn ~ .,data = new_train,inportance=TRUE,mtry=variable)
@@ -280,5 +309,5 @@ for (variable in c(1:18)) {
 
 
 
-
+#----------------------Model Comparison (Accuracy, F1 Score)--------------------
 
