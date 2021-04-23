@@ -174,7 +174,7 @@ ggplot(new_train, aes(Churn, fill = Churn))+geom_bar()
 
 
 #----------------------Modeling (Logistic Regression)---------------------------
-
+set.seed(123)
 # define training control 10 fold cross validation
 train_control <- trainControl(method = "cv", number = 10)
 # train the model on training set using logistic Regression
