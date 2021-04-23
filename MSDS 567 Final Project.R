@@ -4,6 +4,9 @@ library(imputeTS)
 library(here)
 library(caret)
 library(dplyr)
+# for parallel computing
+library(parallel)
+library(doParallel)
 
 
 #-------------------------------------------------------------------------------
@@ -176,7 +179,7 @@ ggplot(new_train, aes(Churn, fill = Churn))+geom_bar()
 #----------------------Modeling (Logistic Regression)---------------------------
 set.seed(123)
 # define training control 10 fold cross validation
-train_control <- trainControl(method = "cv", number = 10)
+train_control <- trainControl(method = "cv", number = 10, allowParallel = FALSE)
 # train the model on training set using logistic Regression
 model_logit <- caret::train(Churn ~ .,data = new_train,
                trControl = train_control,
@@ -215,12 +218,20 @@ result_lda
 F1_lda
 
 
-#----------------------Modeling (SVM)-------------------------------------------
+#----------------------Modeling (SVM Linear)------------------------------------
 set.seed(123)
+
+cluster <- makeCluster(detectCores() - 2)
+registerDoParallel(cluster)
+
+train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
+
 model_svm <- caret::train(Churn ~ .,data = new_train, method = "svmLinear",
-                 trControl=train_control,
+                 trControl=train_control_parallel,
                  tuneGrid = expand.grid(C = c(0.01,0.1, 1,5,10,100)),
                  verbose = TRUE)
+
+stopCluster(cluster)
 #Pick C = 0.1
 
 predict_svm <- predict(model_svm, newdata = test)
@@ -231,15 +242,91 @@ result_svm
 F1_svm
 
 
+#----------------------Modeling (SVM Radial)------------------------------------
+set.seed(123)
+
+cluster <- makeCluster(detectCores() - 2)
+registerDoParallel(cluster)
+
+train_control_parallel <- trainControl(method = "cv", number = 5, allowParallel = TRUE)
+
+model_svm_Rad <- caret::train(Churn ~ .,data = new_train, method = "svmRadial",
+                          trControl=train_control_parallel,
+                          tuneLength = 5,
+                          verbose = TRUE)
+
+stopCluster(cluster)
+
+model_svm_Rad$bestTune
+
+predict_svm_Rad <- predict(model_svm_Rad, newdata = test)
+
+result_svm_Rad <- confusionMatrix(data = predict_svm_Rad, reference = test$Churn, mode = "prec_recall")
+F1_svm_Rad <- result_svm_Rad$byClass[7]
+result_svm_Rad
+F1_svm_Rad
+
+
 
 
 #----------------------Modeling (Random Forest)---------------------------------
+set.seed(123)
+
+cluster <- makeCluster(detectCores() - 2)
+registerDoParallel(cluster)
+train_control_parallel <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
 
 model_rf <- caret::train(Churn ~ .,data = new_train, method = "rf",
-                trControl=train_control,
+                trControl=train_control_parallel,
                 tuneGrid = expand.grid(.mtry = c(1:18)),
+                metric="Kappa",
                 verbose = TRUE)
 
+stopCluster(cluster)
+model_rf
+
+predict_rf <- predict(model_rf, newdata = test)
+result_rf <- confusionMatrix(data = predict_rf, reference = test$Churn, mode = "prec_recall")
+F1_rf <- result_rf$byClass[7]
+result_rf
+F1_rf
+
+
+#---------Use randomForest to tune tree and # of variable split
+
+set.seed(123)
+#Variable Importance Plot
+library(randomForest)
+
+#Choose mtry = 11 based on above
+model_rf1 <- randomForest(Churn ~ .,data = new_train,mtry =11, importance = TRUE)
+print(model_rf1)
+
+pred_rf1 <- predict(model_rf1, test)
+
+result_rf1 = caret::confusionMatrix(pred_rf1, test$Churn, mode = "prec_recall")
+
+result_rf1$byClass[7]
+
+
+#Find optimal tree size, 100 seems sufficient
+plot(model_rf1,main="Error as ntree increases")
+
+set.seed(123)
+
+#Final Model for RF
+model_rf2 <- randomForest(Churn ~ .,data = new_train,mtry =11, ntree = 100, importance = TRUE)
+print(model_rf2)
+
+
+pred_rf2 <- predict(model_rf2, test)
+
+result_rf2 = caret::confusionMatrix(pred_rf2, test$Churn, mode = "prec_recall")
+
+result_rf2$byClass[7]
+
+
+varImpPlot(model_rf2, main="Variable Importance Plots")
 
 
 
@@ -247,5 +334,5 @@ model_rf <- caret::train(Churn ~ .,data = new_train, method = "rf",
 
 
 
-
+#----------------------Model Comparison (Accuracy, F1 Score)--------------------
 
