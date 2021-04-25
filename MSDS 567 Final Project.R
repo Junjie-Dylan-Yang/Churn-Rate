@@ -143,13 +143,17 @@ train = df[split,]
 #is saved for the best model after models' performance comparison
 test =  df[-split,]
 
+#Validation set
+split_again = createDataPartition(train$Churn,p = 0.7,list = FALSE)
 
+train1 = train[split_again,]
+validation = train[-split_again,]
 
 
 
 #Need of oversampling for unbalanced?
 
-ggplot(train, aes(Churn, fill = Churn))+geom_bar()
+ggplot(train1, aes(Churn, fill = Churn))+geom_bar()
 
 
 #library(ROSE)
@@ -163,10 +167,11 @@ ggplot(train, aes(Churn, fill = Churn))+geom_bar()
 #-------------------Use below---------------------
 
 library(unbalanced)
-levels(train$Churn) <- c(0,1)
+levels(train1$Churn) <- c(0,1)
 levels(test$Churn) <- c(0,1)
-input <- train[,1:18]
-response <- train$Churn
+levels(validation$Churn) <- c(0,1)
+input <- train1[,1:18]
+response <- train1$Churn
 balance <- ubOver(X=input, Y=response) 
 new_train <- cbind(balance$X, balance$Y)
 colnames(new_train)[19] <- "Churn"
@@ -193,9 +198,9 @@ print(model_logit)
 
 
 #Use the logit model to make prediction 
-predict_logit <- predict(model_logit, newdata = test)
+predict_logit <- predict(model_logit, newdata = validation)
 #Generate Confusion Matrix and F1 Score.
-result_logit <- confusionMatrix(data = predict_logit, reference = test$Churn, mode = "prec_recall")
+result_logit <- confusionMatrix(data = predict_logit, reference = validation$Churn, mode = "prec_recall")
 F1_logit <- result_logit$byClass[7]
 result_logit
 F1_logit
@@ -210,9 +215,9 @@ model_lda <- caret::train(Churn ~ .,data = new_train, method = "lda",
                  verbose = TRUE)
 model_lda
 
-predict_lda <- predict(model_lda, newdata = test)
+predict_lda <- predict(model_lda, newdata = validation)
 
-result_lda <- confusionMatrix(data = predict_lda, reference = test$Churn, mode = "prec_recall")
+result_lda <- confusionMatrix(data = predict_lda, reference = validation$Churn, mode = "prec_recall")
 F1_lda <- result_lda$byClass[7]
 result_lda
 F1_lda
@@ -232,11 +237,11 @@ model_svm <- caret::train(Churn ~ .,data = new_train, method = "svmLinear",
                  verbose = TRUE)
 
 stopCluster(cluster)
-#Pick C = 0.1
+#Pick C = 0.01
 
-predict_svm <- predict(model_svm, newdata = test)
+predict_svm <- predict(model_svm, newdata = validation)
 
-result_svm <- confusionMatrix(data = predict_svm, reference = test$Churn, mode = "prec_recall")
+result_svm <- confusionMatrix(data = predict_svm, reference = validation$Churn, mode = "prec_recall")
 F1_svm <- result_svm$byClass[7]
 result_svm
 F1_svm
@@ -259,9 +264,9 @@ stopCluster(cluster)
 
 model_svm_Rad$bestTune
 
-predict_svm_Rad <- predict(model_svm_Rad, newdata = test)
+predict_svm_Rad <- predict(model_svm_Rad, newdata = validation)
 
-result_svm_Rad <- confusionMatrix(data = predict_svm_Rad, reference = test$Churn, mode = "prec_recall")
+result_svm_Rad <- confusionMatrix(data = predict_svm_Rad, reference = validation$Churn, mode = "prec_recall")
 F1_svm_Rad <- result_svm_Rad$byClass[7]
 result_svm_Rad
 F1_svm_Rad
@@ -285,8 +290,8 @@ model_rf <- caret::train(Churn ~ .,data = new_train, method = "rf",
 stopCluster(cluster)
 model_rf
 
-predict_rf <- predict(model_rf, newdata = test)
-result_rf <- confusionMatrix(data = predict_rf, reference = test$Churn, mode = "prec_recall")
+predict_rf <- predict(model_rf, newdata = validation)
+result_rf <- confusionMatrix(data = predict_rf, reference = validation$Churn, mode = "prec_recall")
 F1_rf <- result_rf$byClass[7]
 result_rf
 F1_rf
@@ -298,13 +303,13 @@ set.seed(123)
 #Variable Importance Plot
 library(randomForest)
 
-#Choose mtry = 11 based on above
-model_rf1 <- randomForest(Churn ~ .,data = new_train,mtry =11, importance = TRUE)
+#Choose mtry = 15 based on above
+model_rf1 <- randomForest(Churn ~ .,data = new_train,mtry =15, importance = TRUE)
 print(model_rf1)
 
-pred_rf1 <- predict(model_rf1, test)
+pred_rf1 <- predict(model_rf1, validation)
 
-result_rf1 = caret::confusionMatrix(pred_rf1, test$Churn, mode = "prec_recall")
+result_rf1 = caret::confusionMatrix(pred_rf1, validation$Churn, mode = "prec_recall")
 
 result_rf1$byClass[7]
 
@@ -315,13 +320,13 @@ plot(model_rf1,main="Error as ntree increases")
 set.seed(123)
 
 #Final Model for RF
-model_rf2 <- randomForest(Churn ~ .,data = new_train,mtry =11, ntree = 100, importance = TRUE)
+model_rf2 <- randomForest(Churn ~ .,data = new_train,mtry =15, ntree = 100, importance = TRUE)
 print(model_rf2)
 
 
-pred_rf2 <- predict(model_rf2, test)
+pred_rf2 <- predict(model_rf2, validation)
 
-result_rf2 = caret::confusionMatrix(pred_rf2, test$Churn, mode = "prec_recall")
+result_rf2 = caret::confusionMatrix(pred_rf2, validation$Churn, mode = "prec_recall")
 
 result_rf2$byClass[7]
 
@@ -335,4 +340,30 @@ varImpPlot(model_rf2, main="Variable Importance Plots")
 
 
 #----------------------Model Comparison (Accuracy, F1 Score)--------------------
+
+
+
+
+
+
+
+#----------------------Final Model on test set (rf mtry=15, ntree = 100)---------
+pred_rf_test <- predict(model_rf2, test)
+
+result_test = caret::confusionMatrix(pred_rf_test, test$Churn, mode = "prec_recall")
+
+result_test$byClass[7]
+
+
+#----------------------LR on test set (better performance on FN)----------------
+
+pred_Logic_test <- predict(model_logit, test)
+
+result_Logic_test = caret::confusionMatrix(pred_Logic_test, test$Churn, mode = "prec_recall")
+
+result_Logic_test$byClass[7]
+
+
+
+
 
