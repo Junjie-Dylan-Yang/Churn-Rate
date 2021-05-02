@@ -110,9 +110,12 @@ ggplot(df, aes(x = Contract, fill = Churn))+geom_bar() + scale_x_discrete(guide 
 #Monthly cost over Churn
 ggplot(df, aes(x = MonthlyCharges, fill = Churn))+geom_histogram(binwidth = 10)
 
+#Fiber optic 
+ggplot(df, aes(x = InternetService , fill = Churn))+geom_bar() + scale_x_discrete(guide = guide_axis(n.dodge = 3))
 
-
-
+df%>%
+  group_by(InternetService)%>%
+  summarise(mean = mean(MonthlyCharges), n = n())
 
 
 #Multicollinearity 
