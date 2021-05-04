@@ -203,7 +203,7 @@ print(model_logit)
 #Use the logit model to make prediction 
 predict_logit <- predict(model_logit, newdata = validation)
 #Generate Confusion Matrix and F1 Score.
-result_logit <- confusionMatrix(data = predict_logit, reference = validation$Churn, mode = "prec_recall")
+result_logit <- confusionMatrix(data = predict_logit, reference = validation$Churn, mode = "prec_recall", positive = "1")
 F1_logit <- result_logit$byClass[7]
 result_logit
 F1_logit
@@ -220,7 +220,7 @@ model_lda
 
 predict_lda <- predict(model_lda, newdata = validation)
 
-result_lda <- confusionMatrix(data = predict_lda, reference = validation$Churn, mode = "prec_recall")
+result_lda <- confusionMatrix(data = predict_lda, reference = validation$Churn, mode = "prec_recall", positive = "1")
 F1_lda <- result_lda$byClass[7]
 result_lda
 F1_lda
@@ -244,7 +244,7 @@ stopCluster(cluster)
 
 predict_svm <- predict(model_svm, newdata = validation)
 
-result_svm <- confusionMatrix(data = predict_svm, reference = validation$Churn, mode = "prec_recall")
+result_svm <- confusionMatrix(data = predict_svm, reference = validation$Churn, mode = "prec_recall", positive = "1")
 F1_svm <- result_svm$byClass[7]
 result_svm
 F1_svm
@@ -269,7 +269,7 @@ model_svm_Rad$bestTune
 
 predict_svm_Rad <- predict(model_svm_Rad, newdata = validation)
 
-result_svm_Rad <- confusionMatrix(data = predict_svm_Rad, reference = validation$Churn, mode = "prec_recall")
+result_svm_Rad <- confusionMatrix(data = predict_svm_Rad, reference = validation$Churn, mode = "prec_recall", positive = "1")
 F1_svm_Rad <- result_svm_Rad$byClass[7]
 result_svm_Rad
 F1_svm_Rad
@@ -294,7 +294,7 @@ stopCluster(cluster)
 model_rf
 
 predict_rf <- predict(model_rf, newdata = validation)
-result_rf <- confusionMatrix(data = predict_rf, reference = validation$Churn, mode = "prec_recall")
+result_rf <- confusionMatrix(data = predict_rf, reference = validation$Churn, mode = "prec_recall", positive = "1")
 F1_rf <- result_rf$byClass[7]
 result_rf
 F1_rf
@@ -312,7 +312,7 @@ print(model_rf1)
 
 pred_rf1 <- predict(model_rf1, validation)
 
-result_rf1 = caret::confusionMatrix(pred_rf1, validation$Churn, mode = "prec_recall")
+result_rf1 = caret::confusionMatrix(pred_rf1, validation$Churn, mode = "prec_recall", positive = "1")
 
 result_rf1$byClass[7]
 
@@ -329,7 +329,7 @@ print(model_rf2)
 
 pred_rf2 <- predict(model_rf2, validation)
 
-result_rf2 = caret::confusionMatrix(pred_rf2, validation$Churn, mode = "prec_recall")
+result_rf2 = caret::confusionMatrix(pred_rf2, validation$Churn, mode = "prec_recall", positive = "1")
 
 result_rf2$byClass[7]
 
@@ -350,19 +350,21 @@ varImpPlot(model_rf2, main="Variable Importance Plots")
 
 
 
-#----------------------Final Model on test set (rf mtry=15, ntree = 100)---------
-pred_rf_test <- predict(model_rf2, test)
+#----------------------Final Model on test set (better performance on Recall)---------
+pred_svm_linear_test <- predict(model_svm, test)
 
-result_test = caret::confusionMatrix(pred_rf_test, test$Churn, mode = "prec_recall")
+result_svm_test = caret::confusionMatrix(pred_svm_linear_test, test$Churn, mode = "prec_recall", positive = "1")
 
-result_test$byClass[7]
+result_svm_test$byClass[7]
+
+result_svm_test
 
 
-#----------------------LR on test set (better performance on FN)----------------
+#----------------------LR on test set (Final Model)----------------
 
 pred_Logic_test <- predict(model_logit, test)
 
-result_Logic_test = caret::confusionMatrix(pred_Logic_test, test$Churn, mode = "prec_recall")
+result_Logic_test = caret::confusionMatrix(pred_Logic_test, test$Churn, mode = "prec_recall", positive = "1")
 
 result_Logic_test$byClass[7]
 
